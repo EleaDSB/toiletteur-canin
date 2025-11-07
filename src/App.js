@@ -1,23 +1,39 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import Accueil from './components/Accueil';
+import Tarifs from './components/Tarifs';
+import Creations from './components/Creations';
+import Contact from './components/Contact';
+import RendezVous from './components/RendezVous';
 
 function App() {
+  const [activeSection, setActiveSection] = useState('accueil');
+
+  const renderSection = () => {
+    switch (activeSection) {
+      case 'accueil':
+        return <Accueil setActiveSection={setActiveSection} />;
+      case 'tarifs':
+        return <Tarifs />;
+      case 'creations':
+        return <Creations />;
+      case 'contact':
+        return <Contact />;
+      case 'rendez-vous':
+        return <RendezVous />;
+      default:
+        return <Accueil />;
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="App min-h-screen flex flex-col">
+      <Header activeSection={activeSection} setActiveSection={setActiveSection} />
+      <main className="flex-grow">
+        {renderSection()}
+      </main>
+      <Footer />
     </div>
   );
 }

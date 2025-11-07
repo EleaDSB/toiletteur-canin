@@ -1,0 +1,16 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <!-- Masque circulaire -->
+    <clipPath id="circleClip">
+      <circle cx="64" cy="64" r="64"/>
+    </clipPath>
+  </defs>
+
+  <!-- Image avec masque circulaire -->
+  <image
+    href="logo-128.jpg"
+    width="128"
+    height="128"
+    clip-path="url(#circleClip)"
+  />
+</svg>

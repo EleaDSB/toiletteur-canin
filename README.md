@@ -1,6 +1,100 @@
-# Getting Started with Create React App
+# Toutou Chic - Application Toiletteur Canin
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Application web moderne et responsive pour un salon de toilettage canin, développée avec React et Tailwind CSS.
+
+## Description
+
+Cette application vitrine présente les services d'un toiletteur canin professionnel. Elle comprend 5 sections principales :
+- **Accueil** : Présentation du salon et de ses services
+- **Tarifs** : Grille tarifaire détaillée selon la taille du chien
+- **Créations** : Galerie photo des réalisations avec filtres
+- **Contact** : Formulaire de contact et informations pratiques
+- **Rendez-vous** : Système de prise de rendez-vous en ligne avec calendrier interactif et intégration Google Calendar
+
+## Caractéristiques
+
+- Design **mobile-first** et entièrement responsive
+- Interface moderne et attractive avec **Tailwind CSS**
+- Navigation fluide entre les sections
+- Animations et transitions douces
+- Composants réutilisables et modulaires
+- Prêt pour la production
+
+## Technologies utilisées
+
+- React 19.2.0
+- Tailwind CSS 3.x
+- React Calendar (pour la prise de rendez-vous)
+- date-fns (gestion des dates)
+- Google Calendar API (intégration calendrier)
+- Create React App
+
+## Installation
+
+1. Cloner le projet
+```bash
+git clone [url-du-repo]
+cd toiletteur-canin
+```
+
+2. Installer les dépendances
+```bash
+npm install
+```
+
+3. Lancer l'application en mode développement
+```bash
+npm start
+```
+
+L'application sera accessible sur [http://localhost:3000](http://localhost:3000)
+
+4. Construire pour la production
+```bash
+npm run build
+```
+
+## Configuration Google Calendar (optionnel)
+
+Pour activer la prise de rendez-vous avec synchronisation Google Calendar :
+
+1. Consultez le guide complet : [GOOGLE_CALENDAR_SETUP.md](./GOOGLE_CALENDAR_SETUP.md)
+2. Créez un projet sur [Google Cloud Console](https://console.cloud.google.com/)
+3. Activez l'API Google Calendar
+4. Créez des identifiants OAuth 2.0
+5. Configurez les clés dans `src/utils/googleCalendar.js`
+
+Sans cette configuration, le système de prise de rendez-vous fonctionne quand même, mais les rendez-vous ne seront pas synchronisés avec Google Calendar.
+
+## Personnalisation
+
+Pour adapter cette application à votre propre salon :
+
+1. **Couleurs et branding** : Modifiez les classes Tailwind dans les composants
+2. **Textes** : Changez le nom "Toutou Chic" et les informations de contact dans les composants
+3. **Tarifs** : Ajustez les prix dans `src/components/Tarifs.jsx`
+4. **Images** : Remplacez les placeholders de couleur par de vraies photos dans `src/components/Creations.jsx`
+
+## Structure du projet
+
+```
+toiletteur-canin/
+├── src/
+│   ├── components/
+│   │   ├── Header.jsx       # En-tête avec navigation
+│   │   ├── Footer.jsx       # Pied de page
+│   │   ├── Accueil.jsx      # Page d'accueil
+│   │   ├── Tarifs.jsx       # Grille tarifaire
+│   │   ├── Creations.jsx    # Galerie photos
+│   │   ├── Contact.jsx      # Formulaire de contact
+│   │   └── RendezVous.jsx   # Prise de rendez-vous avec calendrier
+│   ├── utils/
+│   │   └── googleCalendar.js # Intégration Google Calendar API
+│   ├── App.js               # Composant principal
+│   └── index.css            # Styles Tailwind + Calendar
+├── GOOGLE_CALENDAR_SETUP.md # Guide configuration Google Calendar
+└── README.md
+```
 
 ## Available Scripts
 
