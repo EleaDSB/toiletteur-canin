@@ -10,6 +10,8 @@ const Contact = () => {
   });
 
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [formError, setFormError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -18,19 +20,45 @@ const Contact = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setFormSubmitted(true);
-    setTimeout(() => {
-      setFormSubmitted(false);
-      setFormData({
-        nom: '',
-        email: '',
-        telephone: '',
-        chien: '',
-        message: ''
+    setIsLoading(true);
+    setFormError(false);
+    setFormSubmitted(false);
+
+    try {
+      const response = await fetch('http://localhost:5001/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       });
-    }, 3000);
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setFormSubmitted(true);
+        setFormData({
+          nom: '',
+          email: '',
+          telephone: '',
+          chien: '',
+          message: ''
+        });
+
+        setTimeout(() => {
+          setFormSubmitted(false);
+        }, 5000);
+      } else {
+        setFormError(true);
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi:', error);
+      setFormError(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -55,8 +83,15 @@ const Contact = () => {
 
             {formSubmitted && (
               <div className="mb-6 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded">
-                <p className="font-bold">Message envoyé !</p>
+                <p className="font-bold">✅ Message envoyé !</p>
                 <p>Je vous répondrais dans les plus brefs délais.</p>
+              </div>
+            )}
+
+            {formError && (
+              <div className="mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded">
+                <p className="font-bold">❌ Erreur</p>
+                <p>Une erreur s'est produite lors de l'envoi. Veuillez réessayer ou nous contacter par téléphone.</p>
               </div>
             )}
 
@@ -142,9 +177,14 @@ const Contact = () => {
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-green-500 to-purple-500 text-white py-4 rounded-lg font-bold text-lg hover:from-green-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                disabled={isLoading}
+                className={`w-full bg-gradient-to-r from-green-500 to-purple-500 text-white py-4 rounded-lg font-bold text-lg transition-all duration-300 shadow-lg ${
+                  isLoading
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'hover:from-green-600 hover:to-purple-600 transform hover:scale-105'
+                }`}
               >
-                Envoyer le message
+                {isLoading ? 'Envoi en cours...' : 'Envoyer le message'}
               </button>
             </form>
           </div>
