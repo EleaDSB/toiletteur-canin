@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Footer = () => {
+const Footer = ({ setActiveSection }) => {
   return (
     <footer className="bg-gradient-to-br from-green-50 to-purple-50 border-t-2 border-green-200 py-8 mt-12">
       <div className="container mx-auto px-4">
@@ -53,9 +53,20 @@ const Footer = () => {
 
         {/* Réseaux sociaux */}
         <div className="mt-8 pt-8 border-t border-green-200 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-600 text-sm mb-4 md:mb-0">
-            © 2025 Toutou Chic. Tous droits réservés.
-          </p>
+          <div className="flex items-center gap-4 mb-4 md:mb-0">
+            <p className="text-gray-600 text-sm">
+              © 2025 Toutou Chic. Tous droits réservés.
+            </p>
+            {setActiveSection && (
+              <button
+                onClick={() => setActiveSection('admin')}
+                className="text-xs text-gray-400 hover:text-green-600 transition-colors duration-300"
+                title="Administration"
+              >
+                🔒
+              </button>
+            )}
+          </div>
           <div className="flex space-x-6">
             <button
               onClick={() => window.open('https://facebook.com', '_blank')}

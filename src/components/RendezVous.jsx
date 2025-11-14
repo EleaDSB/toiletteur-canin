@@ -9,6 +9,9 @@ const RendezVous = () => {
   const [selectedTime, setSelectedTime] = useState(null);
   const [step, setStep] = useState(1); // 1: Date, 2: Heure, 3: Informations
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
+  const [bookingError, setBookingError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [occupiedSlots, setOccupiedSlots] = useState([]);
 
   const [formData, setFormData] = useState({
     nom: '',
@@ -64,10 +67,23 @@ const RendezVous = () => {
     return isBefore(date, today) || closedDays.includes(date.getDay());
   };
 
-  const handleDateChange = (date) => {
+  const handleDateChange = async (date) => {
     setSelectedDate(date);
     setSelectedTime(null);
     setStep(2);
+
+    // Charger les créneaux occupés pour cette date
+    try {
+      const dateString = date.toISOString().split('T')[0];
+      const response = await fetch(`http://localhost:5001/api/appointments/availability/${dateString}`);
+      const data = await response.json();
+
+      if (data.success) {
+        setOccupiedSlots(data.occupiedSlots.map(slot => new Date(slot).getTime()));
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des disponibilités:', error);
+    }
   };
 
   const handleTimeSelect = (time) => {
@@ -84,66 +100,50 @@ const RendezVous = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Créer l'événement pour Google Calendar
-    const event = {
-      summary: `Toilettage - ${formData.nom} (${formData.chien})`,
-      description: `
-Service: ${formData.service}
-Client: ${formData.nom}
-Email: ${formData.email}
-Téléphone: ${formData.telephone}
-Chien: ${formData.chien}
-Notes: ${formData.notes}
-      `.trim(),
-      start: {
-        dateTime: selectedTime.toISOString(),
-        timeZone: 'Europe/Paris'
-      },
-      end: {
-        dateTime: addMinutes(selectedTime, openingHours.slotDuration).toISOString(),
-        timeZone: 'Europe/Paris'
-      },
-      attendees: [
-        { email: formData.email }
-      ],
-      reminders: {
-        useDefault: false,
-        overrides: [
-          { method: 'email', minutes: 24 * 60 }, // 1 jour avant
-          { method: 'popup', minutes: 60 } // 1 heure avant
-        ]
-      }
-    };
+    setIsLoading(true);
+    setBookingError(false);
 
     try {
-      // Ici, on enverrait l'événement à Google Calendar
-      // Pour le moment, on simule le succès
-      console.log('Événement à créer:', event);
+      const response = await fetch('http://localhost:5001/api/appointments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          dateTime: selectedTime.toISOString()
+        }),
+      });
 
-      // Dans une vraie implémentation, vous utiliseriez:
-      // await createGoogleCalendarEvent(event);
+      const data = await response.json();
 
-      setBookingConfirmed(true);
+      if (response.ok && data.success) {
+        setBookingConfirmed(true);
 
-      // Réinitialiser après 5 secondes
-      setTimeout(() => {
-        setBookingConfirmed(false);
-        setStep(1);
-        setSelectedTime(null);
-        setSelectedDate(new Date());
-        setFormData({
-          nom: '',
-          email: '',
-          telephone: '',
-          chien: '',
-          service: 'toilettage-complet',
-          notes: ''
-        });
-      }, 5000);
+        // Réinitialiser après 7 secondes
+        setTimeout(() => {
+          setBookingConfirmed(false);
+          setStep(1);
+          setSelectedTime(null);
+          setSelectedDate(new Date());
+          setFormData({
+            nom: '',
+            email: '',
+            telephone: '',
+            chien: '',
+            service: 'toilettage-complet',
+            notes: ''
+          });
+        }, 7000);
+      } else {
+        setBookingError(true);
+        console.error('Erreur:', data.message);
+      }
     } catch (error) {
       console.error('Erreur lors de la création du rendez-vous:', error);
-      alert('Une erreur est survenue. Veuillez réessayer.');
+      setBookingError(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -207,8 +207,23 @@ Notes: ${formData.notes}
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
               <div>
-                <p className="font-bold text-lg">Rendez-vous confirmé !</p>
-                <p>Vous recevrez un email de confirmation à {formData.email}</p>
+                <p className="font-bold text-lg">✅ Rendez-vous confirmé !</p>
+                <p>Un email de confirmation a été envoyé à votre adresse</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Erreur */}
+        {bookingError && (
+          <div className="max-w-2xl mx-auto mb-8 bg-red-100 border-l-4 border-red-500 text-red-700 p-6 rounded-lg shadow-lg">
+            <div className="flex items-center">
+              <svg className="w-8 h-8 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              <div>
+                <p className="font-bold text-lg">❌ Erreur</p>
+                <p>Une erreur s'est produite. Veuillez réessayer ou nous contacter par téléphone.</p>
               </div>
             </div>
           </div>
@@ -261,19 +276,26 @@ Notes: ${formData.notes}
 
                   <h3 className="font-bold text-gray-800 mb-4">Créneaux disponibles</h3>
                   <div className="grid grid-cols-3 gap-3 max-h-96 overflow-y-auto">
-                    {timeSlots.map((slot, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleTimeSelect(slot)}
-                        className={`py-3 px-4 rounded-lg font-semibold transition-all duration-300 ${
-                          selectedTime && selectedTime.getTime() === slot.getTime()
-                            ? 'bg-green-600 text-white shadow-lg'
-                            : 'bg-gray-100 text-gray-700 hover:bg-green-100 hover:text-green-600'
-                        }`}
-                      >
-                        {format(slot, 'HH:mm')}
-                      </button>
-                    ))}
+                    {timeSlots.map((slot, index) => {
+                      const isOccupied = occupiedSlots.includes(slot.getTime());
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => !isOccupied && handleTimeSelect(slot)}
+                          disabled={isOccupied}
+                          className={`py-3 px-4 rounded-lg font-semibold transition-all duration-300 ${
+                            isOccupied
+                              ? 'bg-red-100 text-red-400 cursor-not-allowed line-through'
+                              : selectedTime && selectedTime.getTime() === slot.getTime()
+                              ? 'bg-green-600 text-white shadow-lg'
+                              : 'bg-gray-100 text-gray-700 hover:bg-green-100 hover:text-green-600'
+                          }`}
+                        >
+                          {format(slot, 'HH:mm')}
+                          {isOccupied && <span className="block text-xs">Occupé</span>}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -383,9 +405,14 @@ Notes: ${formData.notes}
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 bg-gradient-to-r from-green-500 to-purple-500 text-white py-3 rounded-lg font-bold hover:from-green-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                      disabled={isLoading}
+                      className={`flex-1 bg-gradient-to-r from-green-500 to-purple-500 text-white py-3 rounded-lg font-bold transition-all duration-300 shadow-lg ${
+                        isLoading
+                          ? 'opacity-50 cursor-not-allowed'
+                          : 'hover:from-green-600 hover:to-purple-600 transform hover:scale-105'
+                      }`}
                     >
-                      Confirmer
+                      {isLoading ? 'Réservation en cours...' : 'Confirmer'}
                     </button>
                   </div>
                 </form>
