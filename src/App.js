@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Accueil from './components/Accueil';
@@ -6,9 +6,15 @@ import Tarifs from './components/Tarifs';
 import Creations from './components/Creations';
 import Contact from './components/Contact';
 import RendezVous from './components/RendezVous';
+import Admin from './components/Admin';
 
 function App() {
   const [activeSection, setActiveSection] = useState('accueil');
+
+  // Remonter en haut de la page lors du changement d'onglet
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [activeSection]);
 
   const renderSection = () => {
     switch (activeSection) {
@@ -22,6 +28,8 @@ function App() {
         return <Contact />;
       case 'rendez-vous':
         return <RendezVous />;
+      case 'admin':
+        return <Admin />;
       default:
         return <Accueil />;
     }
@@ -33,7 +41,7 @@ function App() {
       <main className="flex-grow">
         {renderSection()}
       </main>
-      <Footer />
+      <Footer setActiveSection={setActiveSection} />
     </div>
   );
 }
